@@ -167,13 +167,13 @@ public class AuthController {
         if (email.isEmpty() || password.isEmpty() || tenantName.isEmpty()) {
             throw new ApiException(400, "Wrong details. Please enter all");
         }
-
+        System.out.println("body" + body);
         Tenant tenant = tenantRepository.findByName(tenantName)
                 .orElseThrow(() -> new ApiException(403, "No tenant exist found"));
-
+        System.out.println("tenant" + tenant);
         User user = userRepository.findByEmailAndTenant(email, tenant.getId())
                 .orElseThrow(() -> new ApiException(400, "Invalid credentials"));
-
+        System.out.println("user" + user);
         if ("suspended".equalsIgnoreCase(user.getStatus())) {
             throw new ApiException(403, "Account suspended");
         }

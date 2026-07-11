@@ -325,7 +325,9 @@ public class AdminController {
         int seats = integerValue(body.get("seats"), 25);
         int slaHours = integerValue(body.get("slaHours"), 24);
 
-        if ("enterprise".equalsIgnoreCase(plan)) {
+        if (plan.isEmpty()) {
+            tenant.getBilling().put("seats", integerValue(tenant.getBilling().get("seats"), 5));
+        } else if ("enterprise".equalsIgnoreCase(plan)) {
             tenant.setPlan("enterprise");
             tenant.setNoteLimit("unlimited");
             tenant.getBilling().put("seats", Math.max(seats, 250));
@@ -333,10 +335,12 @@ public class AdminController {
             tenant.setPlan("team");
             tenant.setNoteLimit("unlimited");
             tenant.getBilling().put("seats", Math.max(seats, 25));
-        } else {
+        } else if ("free".equalsIgnoreCase(plan)) {
             tenant.setPlan("free");
             tenant.setNoteLimit("25");
             tenant.getBilling().put("seats", Math.max(1, Math.min(seats, 5)));
+        } else {
+            tenant.getBilling().put("seats", integerValue(tenant.getBilling().get("seats"), 5));
         }
 
         tenant.getBilling().put("status", "active");
