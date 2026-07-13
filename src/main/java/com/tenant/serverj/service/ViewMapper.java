@@ -111,6 +111,9 @@ public class ViewMapper {
 
     // Tenant id ko tenant object view me convert karta hai.
     public Map<String, Object> tenantView(String tenantId, boolean includePlan) {
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            return null;
+        }
         Tenant tenant = tenantRepository.findById(tenantId).orElse(null);
         if (tenant == null) {
             return null;
@@ -134,6 +137,9 @@ public class ViewMapper {
     }
 
     private Object authTenantView(String tenantId) {
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            return null;
+        }
         Tenant tenant = tenantRepository.findById(tenantId).orElse(null);
         if (tenant == null) {
             return tenantId;
@@ -152,6 +158,9 @@ public class ViewMapper {
     }
 
     private Object profileTenantView(String tenantId) {
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            return null;
+        }
         Tenant tenant = tenantRepository.findById(tenantId).orElse(null);
         if (tenant == null) {
             return tenantId;
@@ -167,6 +176,9 @@ public class ViewMapper {
 
     // userSummary chhota compact user object banata hai.
     private Map<String, Object> userSummary(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            return null;
+        }
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return null;

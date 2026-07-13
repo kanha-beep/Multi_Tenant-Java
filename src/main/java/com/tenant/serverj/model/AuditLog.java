@@ -5,12 +5,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document("auditlogs")
 public class AuditLog {
     @Id
     private String id;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String tenant;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String actor;
     private String action;
     private String entityType;

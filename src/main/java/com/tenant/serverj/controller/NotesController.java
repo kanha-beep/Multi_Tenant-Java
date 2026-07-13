@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/notes")
+@RequestMapping("/api/notes")
 public class NotesController {
     private final AuthGuard authGuard;
     private final NoteRepository noteRepository;

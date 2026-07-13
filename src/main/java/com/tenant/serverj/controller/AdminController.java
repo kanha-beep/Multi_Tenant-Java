@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
     private final AuthGuard authGuard;
     private final UserRepository userRepository;
@@ -78,7 +78,15 @@ public class AdminController {
     @GetMapping("/dashboard")
     public Map<String, Object> dashboard(HttpServletRequest request) {
         AuthUser authUser = authorizeAdmin(request);
-        return tenantDashboardService.getTenantDashboard(authUser.getTenantId());
+        Map<String, Object> dashboard = tenantDashboardService.getTenantDashboard(authUser.getTenantId());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> kpis = (Map<String, Object>) dashboard.get("kpis");
+        System.out.println(
+                "DASHBOARD tenant=" + authUser.getTenantId()
+                        + " totalUsers=" + (kpis == null ? null : kpis.get("totalUsers"))
+                        + " totalNotes=" + (kpis == null ? null : kpis.get("totalNotes"))
+        );
+        return dashboard;
     }
 
     @GetMapping("/reports/summary")
@@ -286,14 +294,22 @@ public class AdminController {
             throw new ApiException(404, "No users found to export");
         }
 
-        StringBuilder csv = new StringBuilder("Username,Email,CreatedAt\n");
+        List<Note> notes = noteRepository.findByTenant(authUser.getTenantId());
+
+        StringBuilder csv = new StringBuilder("Username,Email,CreatedAt,Notes\n");
         for (User user : users) {
-            csv.append(safe(user.getUsername())).append(',')
-                    .append(safe(user.getEmail())).append(',')
-                    .append(user.getCreatedAt() == null ? "N/A" : user.getCreatedAt().toInstant()
+            String userNotes = notes.stream()
+                    .filter(note -> user.getId() != null && user.getId().equals(note.getUser()))
+                    .map(note -> safe(note.getTitle()))
+                    .filter(title -> !title.isEmpty())
+                    .collect(Collectors.joining(" | "));
+            csv.append(escapeCsvValue(user.getUsername())).append(',')
+                    .append(escapeCsvValue(user.getEmail())).append(',')
+                    .append(escapeCsvValue(user.getCreatedAt() == null ? "N/A" : user.getCreatedAt().toInstant()
                             .atZone(java.time.ZoneId.systemDefault())
                             .toLocalDate()
-                            .format(java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy", Locale.US)))
+                            .format(java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy", Locale.US)))).append(',')
+                    .append(escapeCsvValue(userNotes))
                     .append('\n');
         }
         return csvResponse("User_Report.csv", csv.toString());
@@ -337,7 +353,7 @@ public class AdminController {
             tenant.getBilling().put("seats", Math.max(seats, 25));
         } else if ("free".equalsIgnoreCase(plan)) {
             tenant.setPlan("free");
-            tenant.setNoteLimit("25");
+            tenant.setNoteLimit("10");
             tenant.getBilling().put("seats", Math.max(1, Math.min(seats, 5)));
         } else {
             tenant.getBilling().put("seats", integerValue(tenant.getBilling().get("seats"), 5));
@@ -484,6 +500,14 @@ public class AdminController {
         return value == null ? "" : value.replace(",", " ");
     }
 
+    private String escapeCsvValue(String value) {
+        String stringValue = value == null ? "" : value;
+        if (stringValue.contains(",") || stringValue.contains("\"") || stringValue.contains("\n")) {
+            return "\"" + stringValue.replace("\"", "\"\"") + "\"";
+        }
+        return stringValue;
+    }
+
     private String generateTemporaryPassword() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
@@ -539,7 +563,7 @@ public class AdminController {
             tenant.setPaidUsers(0);
         }
         if (tenant.getNoteLimit() == null || tenant.getNoteLimit().trim().isEmpty()) {
-            tenant.setNoteLimit("free".equalsIgnoreCase(tenant.getPlan()) ? "25" : "unlimited");
+            tenant.setNoteLimit("free".equalsIgnoreCase(tenant.getPlan()) ? "10" : "unlimited");
         }
         if (tenant.getDisplayName() == null || tenant.getDisplayName().trim().isEmpty()) {
             tenant.setDisplayName(tenant.getName());

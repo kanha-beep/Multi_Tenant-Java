@@ -74,7 +74,7 @@ public class TenantDashboardService {
         ));
         response.put("billing", mapOf(
                 "plan", tenant == null ? "free" : tenant.getPlan(),
-                "noteLimit", tenant == null ? "25" : tenant.getNoteLimit(),
+                "noteLimit", tenant == null ? "10" : tenant.getNoteLimit(),
                 "seats", integerValue(tenant == null ? null : tenant.getBilling().get("seats"), 5),
                 "paidUsers", tenant == null || tenant.getPaidUsers() == null ? 0 : tenant.getPaidUsers(),
                 "renewalDate", tenant == null ? null : tenant.getBilling().get("renewalDate"),
@@ -94,7 +94,7 @@ public class TenantDashboardService {
                 "seatsProvisioned", integerValue(tenant == null ? null : tenant.getBilling().get("seats"), 5),
                 "noteUtilization", tenant != null && "unlimited".equalsIgnoreCase(tenant.getNoteLimit())
                         ? "unlimited"
-                        : totalNotes + "/" + (tenant == null ? "25" : tenant.getNoteLimit())
+                        : totalNotes + "/" + (tenant == null ? "10" : tenant.getNoteLimit())
         ));
         response.put("analytics", mapOf(
                 "notesByRole", users.stream().map(user -> mapOf(
@@ -293,7 +293,7 @@ public class TenantDashboardService {
             tenant.getSettings().put("slaHours", 24);
         }
         if (tenant.getNoteLimit() == null || tenant.getNoteLimit().trim().isEmpty()) {
-            tenant.setNoteLimit("25");
+            tenant.setNoteLimit("10");
         }
         if (tenant.getPaidUsers() == null) {
             tenant.setPaidUsers(0);

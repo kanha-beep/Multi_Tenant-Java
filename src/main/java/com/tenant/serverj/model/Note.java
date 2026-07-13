@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document("notes")
 public class Note {
@@ -12,8 +14,11 @@ public class Note {
     private String id;
     private String title;
     private String content;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String user;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String createdBy;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String tenant;
     private Boolean check = false;
     private String status = "pending";

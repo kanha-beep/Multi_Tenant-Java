@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     private final UserRepository userRepository;
     private final InviteRepository inviteRepository;
@@ -91,7 +91,7 @@ public class AuthController {
             tenant.setName(tenantName);
             tenant.setDisplayName(stringValue(body.get("tenantDisplayName")).isEmpty() ? tenantName : stringValue(body.get("tenantDisplayName")));
             tenant.setPlan("free");
-            tenant.setNoteLimit("25");
+            tenant.setNoteLimit("10");
             tenant.setPaidUsers(1);
             tenant.setBilling(defaultBilling(5, "trialing"));
             tenant.setSettings(defaultSettings(false, 24));
@@ -174,6 +174,10 @@ public class AuthController {
         User user = userRepository.findByEmailAndTenant(email, tenant.getId())
                 .orElseThrow(() -> new ApiException(400, "Invalid credentials"));
         System.out.println("user" + user);
+        String normalizedRole = normalizeUserRole(user.getRole());
+        if (!normalizedRole.equals(user.getRole())) {
+            user.setRole(normalizedRole);
+        }
         if ("suspended".equalsIgnoreCase(user.getStatus())) {
             throw new ApiException(403, "Account suspended");
         }
@@ -283,6 +287,9 @@ public class AuthController {
 
     private String normalizeUserRole(String role) {
         String normalized = role == null ? "member" : role.trim().toLowerCase();
+        if ("user".equals(normalized)) {
+            return "member";
+        }
         if ("owner".equals(normalized) || "admin".equals(normalized) || "member".equals(normalized) || "viewer".equals(normalized)) {
             return normalized;
         }

@@ -3,6 +3,8 @@ package com.tenant.serverj.model;
 import java.util.Date;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document("users")
 public class User {
@@ -14,7 +16,9 @@ public class User {
     private Date lastSeenAt;
     private String role = "member";
     private String status = "active";
+    @Field(targetType = FieldType.OBJECT_ID)
     private String tenant;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String invitedBy;
     private Date invitedAt;
     private Date createdAt;

@@ -3,15 +3,19 @@ package com.tenant.serverj.model;
 import java.util.Date;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Document("invites")
 public class Invite {
     @Id
     private String id;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String tenant;
     private String email;
     private String role = "member";
     private String token;
+    @Field(targetType = FieldType.OBJECT_ID)
     private String invitedBy;
     private Date expiresAt;
     private Date acceptedAt;
